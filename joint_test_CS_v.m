@@ -178,7 +178,7 @@ Tx_data=IFFT_after;
 
 
 %% 解调
-Nt=100;
+Nt=10;
 sum_R=0;
 sum_V=0;
 for t=1:Nt
@@ -322,7 +322,7 @@ for t=1:Nt
                 y=D1(iii,:).*[0,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,0,0];
                 y(find(y==0))=[];
                 %利用YALL1求解器算出原始信号x
-                opts.tol =1e-100;
+                opts.tol =1e-1000;
                 [x,~]=CS_FISTA(y.',F1,0.1);
                 D2(iii,:)=x;%对奇数行进行
             end
@@ -330,7 +330,7 @@ for t=1:Nt
                 y=D1(iii,:).*[0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0];
                 y(find(y==0))=[];
                 %利用YALL1求解器算出原始信号x
-                opts.tol =1e-100;
+                opts.tol =1e-1000;
                 [x,~]=CS_FISTA(y.',F2,0.1);
                 D2(iii,:)=x;%对偶数行
             end
@@ -340,26 +340,25 @@ for t=1:Nt
             for i=1:Ncarriers
                 div_v = D2(i,:);
                 cur_div_FFT = (div_v);
-                [max_v,cur_index_v] = max(cur_div_FFT);
-                index_v=index_v+cur_index_v;
                 div_FFT = div_FFT + abs(cur_div_FFT);
             end
             % 根据论文中的公式可以求出速度
-            index_v = index_v / (Ncarriers);
             div_FFT = div_FFT / (Ncarriers);%进行归一化
-            M_v = ((index_v-1)*c0 / (2*f_c*Nsymbols*(1/delta_f)));
-                         figure(2)
-                         %  plot(abs(div_FFT/max_v));%画出归一化后的剖面图
-                         mag2=abs(div_FFT/max_v);
-                         Index_v=[0:Nsymbols-1];
-                         V=[1:Nsymbols];
-                         V=(Index_v'.*c0 / (2*f_c*Nsymbols*(1/delta_f)));
-                         plot(V,mag2);
-%                          plot(mag2); 
-                         xlabel('index_v');
-                         ylabel('Mag');
-                         title('OFDM radar velocity');
-            sum_V=sum_V+(M_v-v(1))^2;
+            plot(div_FFT)
+            [max_v,cur_index_v] = max(div_FFT);
+            M_v = ((cur_index_v-1)*c0 / (2*f_c*Nsymbols*(1/delta_f)));
+%             figure(2)
+%             %  plot(abs(div_FFT/max_v));%画出归一化后的剖面图
+%             mag2=abs(div_FFT/max_v);
+%             Index_v=[0:Nsymbols-1];
+%             V=[1:Nsymbols];
+%             V=(Index_v'.*c0 / (2*f_c*Nsymbols*(1/delta_f)));
+%             plot(V,mag2);
+%             %                          plot(mag2);
+%             xlabel('index_v');
+%             ylabel('Mag');
+%             title('OFDM radar velocity');
+             sum_V=sum_V+(M_v-v(1))^2;
         case 3%MUSIC
             % 构建信道信息矩阵
             %% 提取用于测距的导频信息矩阵
